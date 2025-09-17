@@ -182,6 +182,10 @@
             color: var(--primary-color);
             background-color: rgba(0, 0, 0, 0.1);
         }
+        
+        .full-width-chart {
+            grid-column: 1 / -1;
+        }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
@@ -232,6 +236,34 @@
                             <tbody></tbody>
                         </table>
                         <p id="no-pending-approvers" style="text-align: center; margin-top: 15px; color: var(--text-light); display: none;">No pending bills with approvers.</p>
+                    </div>
+                    
+                    <div class="chart-section full-width-chart">
+                        <h2>Entries by User (Sheet1)</h2>
+                        <div class="chart-container">
+                            <canvas id="userEntriesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-section full-width-chart">
+                        <h2>Approval Status Breakdown</h2>
+                        <div class="chart-container">
+                            <canvas id="approvalStatusChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-section full-width-chart">
+                        <h2>Pay Status by Biller</h2>
+                        <div class="chart-container">
+                            <canvas id="billerPayStatusChart"></canvas>
+                        </div>
+                    </div>
+                    
+                     <div class="chart-section full-width-chart">
+                        <h2>Bills Paid by Payer</h2>
+                        <div class="chart-container">
+                            <canvas id="payerBillsChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -294,6 +326,10 @@
             renderSummaryCards(data.pipelineSummary);
             renderPipelineChart(data.pipelineSummary);
             renderApproverBreakdown(data.approverBreakdown);
+            renderEntriesByUserChart(data.entriesByUser);
+            renderApprovalStatusChart(data.approvalStatus);
+            renderBillerPayStatusChart(data.billerPayStatus);
+            renderPayerBillsChart(data.payerBills);
         }
 
         function renderSummaryCards(summary) {
@@ -370,6 +406,128 @@
                 `;
                 tbody.appendChild(row);
             }
+        }
+        
+        function renderEntriesByUserChart(data) {
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            const ctx = document.getElementById('userEntriesChart').getContext('2d');
+            if (window.userEntriesChartInstance) {
+                window.userEntriesChartInstance.destroy();
+            }
+            window.userEntriesChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Entries Created',
+                        data: values,
+                        backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { display: false } },
+                        y: { ticks: { color: 'white', precision: 0 }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+        }
+
+        function renderApprovalStatusChart(data) {
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            const colors = {
+                'Accountant': 'rgba(255, 99, 132, 0.8)',
+                'CFO': 'rgba(54, 162, 235, 0.8)',
+                'HOD': 'rgba(255, 206, 86, 0.8)',
+                'Final': 'rgba(75, 192, 192, 0.8)'
+            };
+            const backgroundColors = labels.map(label => colors[label] || 'rgba(153, 102, 255, 0.8)');
+            
+            const ctx = document.getElementById('approvalStatusChart').getContext('2d');
+            if (window.approvalStatusChartInstance) {
+                window.approvalStatusChartInstance.destroy();
+            }
+            window.approvalStatusChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Bills by Status',
+                        data: values,
+                        backgroundColor: backgroundColors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { display: false } },
+                        y: { ticks: { color: 'white', precision: 0 }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+        }
+
+        function renderBillerPayStatusChart(data) {
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            const ctx = document.getElementById('billerPayStatusChart').getContext('2d');
+            if (window.billerPayStatusChartInstance) {
+                window.billerPayStatusChartInstance.destroy();
+            }
+            window.billerPayStatusChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)', 'rgba(255, 206, 86, 0.8)', 'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)', 'rgba(199, 199, 199, 0.8)', 'rgba(83, 102, 255, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: 'white' } } }
+                }
+            });
+        }
+        
+        function renderPayerBillsChart(data) {
+             const labels = Object.keys(data);
+            const values = Object.values(data);
+            const ctx = document.getElementById('payerBillsChart').getContext('2d');
+            if (window.payerBillsChartInstance) {
+                window.payerBillsChartInstance.destroy();
+            }
+            window.payerBillsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Bills Paid',
+                        data: values,
+                        backgroundColor: 'rgba(60, 179, 113, 0.8)' // Greenish color for paid bills
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { display: false } },
+                        y: { ticks: { color: 'white', precision: 0 }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    }
+                }
+            });
         }
     </script>
 </body>
