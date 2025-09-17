@@ -433,6 +433,7 @@
             font-weight: 600;
             margin-bottom: 15px;
             text-align: center;
+            color: #1c1e21;
         }
     </style>
 </head>
@@ -456,7 +457,6 @@
             <h2>Overview</h2>
             <div id="dashboard-loader" class="loader">Loading dashboard data...</div>
             <div id="dashboard-stats" class="dashboard-stats" style="display: none;"></div>
-
             <div id="dashboard-charts" class="chart-grid" style="display: none;">
                 <div class="chart-container">
                     <h3 class="chart-title">Approval Status Breakdown</h3>
@@ -688,7 +688,7 @@
                         legend: {
                             position: 'top',
                             labels: {
-                                color: 'white'
+                                color: 'black'
                             }
                         },
                         tooltip: {
@@ -758,23 +758,24 @@
                     },
                     scales: {
                         x: {
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' }
                         },
                         y: {
-                            ticks: { color: 'white', precision: 0 },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            ticks: { color: 'black', precision: 0 },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' }
                         }
                     }
                 }
             });
         }
-
+        
         function initializeSection(type, data) {
             const searchInput = document.getElementById(`${type}-search`);
-            const searchFunction = () => renderCards(type, data, searchInput.value);
-            
-            searchInput.oninput = debounce(searchFunction, 300);
+            if (searchInput) {
+                 const searchFunction = () => renderCards(type, data, searchInput.value);
+                 searchInput.oninput = debounce(searchFunction, 300);
+            }
             initializeColumnSelector(type, currentHeaders[type]);
             renderCards(type, data);
         }
@@ -871,6 +872,8 @@
         
         function initializeColumnSelector(type, headers) {
             const selectorContainer = document.getElementById(`${type}-selector`);
+            if (!selectorContainer) return;
+
             const btn = document.createElement('button');
             btn.className = 'column-selector-btn';
             btn.textContent = 'Select Columns';
@@ -885,7 +888,7 @@
                 optionDiv.querySelector('input').addEventListener('change', () => {
                     const newCols = Array.from(dropdown.querySelectorAll('input:checked')).map(cb => cb.value);
                     localStorage.setItem(`superadmin-${type}-cols`, JSON.stringify(newCols));
-                    renderCards(type, loadedData[type], document.getElementById(`${type}-search`).value);
+                    renderCards(type, loadedData[type]);
                 });
                 dropdown.appendChild(optionDiv);
             });
@@ -909,10 +912,21 @@
             document.getElementById(sectionName + '-section').classList.add('visible');
             document.getElementById('nav-' + sectionName).classList.add('active');
             
-            if (sectionName !== 'dashboard' && loadedData[sectionName]) {
-                renderCards(sectionName, loadedData[sectionName], document.getElementById(`${sectionName}-search`).value);
-            } else if (sectionName === 'dashboard' && loadedData.users) {
-                renderDashboard();
+            // Corrected logic to handle dashboard vs other sections
+            if (sectionName === 'dashboard') {
+                const dashStats = document.getElementById('dashboard-stats');
+                const dashCharts = document.getElementById('dashboard-charts');
+                if (dashStats) dashStats.style.display = 'grid';
+                if (dashCharts) dashCharts.style.display = 'grid';
+            } else {
+                const dashStats = document.getElementById('dashboard-stats');
+                const dashCharts = document.getElementById('dashboard-charts');
+                if (dashStats) dashStats.style.display = 'none';
+                if (dashCharts) dashCharts.style.display = 'none';
+            }
+            
+            if (loadedData[sectionName]) {
+                renderCards(sectionName, loadedData[sectionName]);
             }
         }
 
@@ -923,6 +937,7 @@
             modalBody.innerHTML = '';
             
             const headersToUse = currentHeaders[tableType];
+            
             document.getElementById('modal-title').textContent = `Entry Details - ${tableType}`;
             
             headersToUse.forEach(header => {
@@ -943,6 +958,7 @@
             });
 
             document.getElementById('modal-overlay').style.display = 'flex';
+            
             document.getElementById('delete-btn').onclick = () => deleteEntry(tableType, currentRowIndex);
         }
 
@@ -1013,10 +1029,6 @@
             if (container) container.innerHTML = '';
             const noDataEl = document.getElementById(`no-${tableType}`);
             if (noDataEl) noDataEl.style.display = 'none';
-        }
-
-        function hideLoader(tableType) {
-             document.getElementById(`${tableType}-loader`).style.display = 'none';
         }
     </script>
 </body>
