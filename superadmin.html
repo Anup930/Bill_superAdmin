@@ -437,7 +437,7 @@
             let inputField = '';
             
             if (inputType === 'select') {
-                const options = (header === 'approvalType') ? ['Biller', 'Payer', 'SuperAdmin'] : ['Pending', 'Completed', 'Rejected', 'Hold'];
+                const options = (header === 'approvalType') ? ['Biller', 'Payer', 'SuperAdmin','HOD','CFO','Final'] : ['Pending', 'Completed', 'Rejected', 'Hold'];
                 const selectHtml = options.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`).join('');
                 inputField = `<label for="modal-${header}">${header}</label><select id="modal-${header}" name="${header}">${selectHtml}</select>`;
             } else {
